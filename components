@@ -1,16 +1,9 @@
 IoT Components Required for Continuous Health Monitoring System
 
-
-1. ESP8266 / ESP32 – Wi-Fi module for IoT connectivity
-GSM Module (SIM800L/SIM900A) – Sends emergency alerts via SMS
-2. Sensors for Health Monitoring
-Accelerometer (ADXL345/MPU6050) – Detects fetal movements (kicks)
-Heartbeat Sensor (MAX30100/MAX30102) – Measures maternal heart rate
-Blood Pressure Sensor (BMP180/MPX5050GP) – Monitors maternal blood pressure
-Temperature Sensor (DS18B20/DHT11) – Tracks maternal body temperature
-3. Display & Power Components
-OLED Display / LCD 16x2 – Displays real-time health parameters locally
-Rechargeable Battery / Power Adapter – Provides continuous power for portability
-4. IoT Cloud & Mobile Connectivity
-ThingSpeak / Firebase / Blynk – Cloud platforms for real-time data logging and analysis
-Mobile App / Web Dashboard – Displays live data and alerts caregivers remotely
+1. ESP32 (for Wi-Fi & IoT connectivity)
+2. MAX30100/MAX30102 (Heartbeat sensor)
+3. MPX5050GP/BMP180 (Blood pressure sensor)
+4. DHT11/DS18B20 (Temperature sensor)
+5. ADXL345/MPU6050 (Accelerometer for fetal movements)
+6. SIM800L/SIM900A (GSM module for SMS alerts)
+7. OLED Display (128x64 I2C)

@@ -7,3 +7,4 @@ IoT Components Required for Continuous Health Monitoring System
 5. ADXL345/MPU6050 (Accelerometer for fetal movements)
 6. SIM800L/SIM900A (GSM module for SMS alerts)
 7. OLED Display (128x64 I2C)
+8. AD8232 ECG Sensor – Captures ECG signals

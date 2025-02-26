@@ -1,0 +1,116 @@
+#include <Wire.h>
+#include <WiFi.h>
+#include <FirebaseESP32.h>
+#include <Adafruit_SSD1306.h>
+#include <DHT.h>
+#include <Adafruit_MPU6050.h>
+#include <Adafruit_Sensor.h>
+#include <SoftwareSerial.h>
+
+// WiFi & Firebase Config
+#define WIFI_SSID "your_wifi_ssid"
+#define WIFI_PASSWORD "your_wifi_password"
+#define FIREBASE_HOST "your_firebase_url"
+#define FIREBASE_AUTH "your_firebase_auth_key"
+
+// Initialize Firebase
+FirebaseData firebaseData;
+
+// Sensors
+#define DHTPIN 4
+#define DHTTYPE DHT11
+DHT dht(DHTPIN, DHTTYPE);
+
+Adafruit_MPU6050 mpu;
+Adafruit_SSD1306 display(128, 64, &Wire, -1);
+SoftwareSerial sim800(16, 17); // TX, RX for SIM800L
+
+// ECG Sensor (AD8232)
+#define ECG_PIN 36
+
+// Thresholds for alerts
+const float TEMP_THRESHOLD = 38.0;  // Fever alert
+const int BP_THRESHOLD = 140;       // High BP alert
+const int KICK_THRESHOLD = 3;       // Low fetal movement alert
+const int ECG_THRESHOLD = 900;      // Abnormal ECG alert
+
+void setup() {
+    Serial.begin(115200);
+    sim800.begin(9600);
+    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+    
+    Serial.print("Connecting to WiFi");
+    while (WiFi.status() != WL_CONNECTED) {
+        delay(500);
+        Serial.print(".");
+    }
+    Serial.println("Connected!");
+
+    Firebase.begin(FIREBASE_HOST, FIREBASE_AUTH);
+    Firebase.reconnectWiFi(true);
+
+    dht.begin();
+    if (!mpu.begin()) {
+        Serial.println("MPU6050 not found!");
+        while (1);
+    }
+
+    display.begin(SSD1306_SWITCHCAPVCC, 0x3C);
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+    display.display();
+
+    pinMode(ECG_PIN, INPUT);
+}
+
+void loop() {
+    // Read temperature
+    float temperature = dht.readTemperature();
+    // Simulated Blood Pressure Data (Replace with actual sensor reading)
+    int bloodPressure = random(110, 150);
+    // Read fetal movement (kicks)
+    sensors_event_t a, g, temp;
+    mpu.getEvent(&a, &g, &temp);
+    int fetalKicks = abs(a.acceleration.x) > 2 ? 1 : 0; // Simple kick detection
+    // Read ECG Value
+    int ecgValue = analogRead(ECG_PIN);
+
+    // Display on OLED
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.print("Temp: "); display.print(temperature); display.println(" C");
+    display.print("BP: "); display.print(bloodPressure); display.println(" mmHg");
+    display.print("Fetal Kicks: "); display.println(fetalKicks);
+    display.print("ECG: "); display.println(ecgValue);
+    display.display();
+
+    // Upload to Firebase
+    Firebase.setFloat(firebaseData, "/Health/Temperature", temperature);
+    Firebase.setInt(firebaseData, "/Health/BloodPressure", bloodPressure);
+    Firebase.setInt(firebaseData, "/Health/FetalKicks", fetalKicks);
+    Firebase.setInt(firebaseData, "/Health/ECG", ecgValue);
+
+    // Send Alert if Needed
+    if (temperature > TEMP_THRESHOLD || bloodPressure > BP_THRESHOLD || fetalKicks < KICK_THRESHOLD || ecgValue > ECG_THRESHOLD) {
+        sendAlertSMS(temperature, bloodPressure, fetalKicks, ecgValue);
+    }
+
+    delay(5000); // Update every 5 seconds
+}
+
+// Function to send SMS via SIM800L
+void sendAlertSMS(float temp, int bp, int kicks, int ecg) {
+    sim800.println("AT+CMGF=1");  // Set SMS mode
+    delay(1000);
+    sim800.println("AT+CMGS=\"+91xxxxxxxxxx\""); // Replace with actual phone number
+    delay(1000);
+    sim800.print("ALERT! Health Parameter Issue:\n");
+    if (temp > TEMP_THRESHOLD) sim800.print("High Temp: "); sim800.print(temp); sim800.println(" C");
+    if (bp > BP_THRESHOLD) sim800.print("High BP: "); sim800.print(bp); sim800.println(" mmHg");
+    if (kicks < KICK_THRESHOLD) sim800.println("Low Fetal Movement!");
+    if (ecg > ECG_THRESHOLD) sim800.print("Abnormal ECG: "); sim800.print(ecg); sim800.println(" units");
+    sim800.println("\nSeek medical attention.");
+    delay(1000);
+    sim800.write(26);  // End SMS
+}

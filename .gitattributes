@@ -7,7 +7,7 @@
 #include <Adafruit_Sensor.h>
 #include <SoftwareSerial.h>
 
-// WiFi & Firebase Config
+// WiFi and Firebase Config
 #define WIFI_SSID "your_wifi_ssid"
 #define WIFI_PASSWORD "your_wifi_password"
 #define FIREBASE_HOST "your_firebase_url"

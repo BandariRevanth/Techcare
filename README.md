@@ -1,6 +1,6 @@
   
 
-We are developing an **IoT-based continuous health monitoring system** to track vital health parameters in real-time. The system should monitor fetal movements, maternal blood pressure, heart rate, and body temperature, ensuring timely alerts in case of abnormalities.  
+We are developing an **IoT-based continuous health monitoring system** to track vital health parameters in real-time. The system should monitor fetal movements, maternal blood pressure, heart rate, and body temperature, ECG monitoring ensuring timely alerts in case of abnormalities.  
 
 The prototype must integrate sensors, IoT connectivity (Firebase, ThingSpeak, or Blynk), and a GSM module to transmit data and send alerts to caregivers or doctors. A mobile app or web dashboard should display live health metrics, enabling remote monitoring and analysis.  
 
